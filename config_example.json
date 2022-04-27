@@ -1,0 +1,39 @@
+{
+    "camera": {
+        "camera_width": 2592,
+        "camera_height": 1944,
+        "camera_enable_frame_overlay": false
+    },
+    "pins": {
+        "pin_button": 10,
+        "pin_flash": 12
+    },
+    "alpha_values": {
+        "alpha_min": 0,
+        "alpha_max": 255
+    },
+    "countdown": {
+        "countdown_time_step": 1
+    },
+    "upload": {
+        "upload_interval_check_connection_seconds": 10,
+        "upload_pictures_endPoint_full_resolution": "FOLDER_ID_FULL",
+        "upload_pictures_endPoint_thumbnail": "FOLDER_ID_THUMB",
+        "upload_JSON_endPoint": "JSONBIN_IO_ENDPOINT",
+        "upload_JSON_apikey": "JSONBION_IO_APIKEY"
+    },
+    "pictures": {
+        "pictures_directory_full_resolution": "photos_full",
+        "pictures_directory_thumbnail": "photos_thumb",
+        "pictures_overlayed_directory": "photos_overlayed",
+        "pictures_base_filename": "picture",
+        "pictures_save_overlayed": false,
+        "pictures_upload_pictures": true
+    },
+    "resources": {
+        "resources_directory": "resources",
+        "frame_picture_overlay": "frame.png",
+        "countdown_pictures_array": ["number_1.png", "number_2.png", "number_3.png"]
+    }
+
+}
