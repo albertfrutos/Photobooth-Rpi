@@ -11,6 +11,8 @@ from googleapiclient.http import MediaFileUpload
 class GDriveUploader:
     def __init__(self, parentFolderIDOriginal, parentFolderIDThumb):
 
+        # If modifying these scopes, delete the file token.json.
+        
         self.scopes = ['https://www.googleapis.com/auth/drive.metadata',
                        'https://www.googleapis.com/auth/drive.file',
                        'https://www.googleapis.com/auth/drive',
@@ -21,9 +23,6 @@ class GDriveUploader:
 
         self.parentFolderOriginal = parentFolderIDOriginal
         self.parentFolderThumb = parentFolderIDThumb
-        # parentFolder = '1e5y5UKL4tmTbmPMpVSHEoaLkw9-7_nnt'
-
-        # If modifying these scopes, delete the file token.json.
 
     def Authenticate(self):
         creds = None

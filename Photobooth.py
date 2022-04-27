@@ -64,14 +64,12 @@ class Photobooth():
         self.FilesUploader = Uploader(self.upload_pictures_endPoint_full_resolution,
                                       self.upload_pictures_endPoint_thumbnail, self.upload_JSON_endPoint,
                                       self.upload_JSON_apikey)
+        
         os.putenv("DISPLAY", ":0.0")
-        # GPIO.cleanup()
-        # GPIO.setwarnings(True)
-        # GPIO.setmode(GPIO.BOARD)
+
         self.button = Button(self.pin_button, pull_up=True)
         self.flash = LED(self.pin_flash)
-        # GPIO.setup(self.pin_button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        # GPIO.setup(self.pin_flash, GPIO.OUT)
+
         self.FilesUploader.gDriveUploader.Authenticate()
 
     def Start(self):
@@ -90,8 +88,6 @@ class Photobooth():
         except:
             e = sys.exc_info()[0]
             logging.error(e)
-
-            # self.WhenButtonPushed()
 
     def LoadConfiguration(self):
 
@@ -127,11 +123,9 @@ class Photobooth():
             self.countdown_pictures_array = config["resources"]["countdown_pictures_array"]
 
     def StartListeningButtonPush(self):
-        # GPIO.add_event_detect(self.pin_button, GPIO.FALLING, callback=self.WhenButtonPushed)
         self.button.when_pressed = self.WhenButtonPushed
 
     def StopListeningButtonPush(self):
-        # GPIO.remove_event_detect(self.pin_button)
         self.button.when_pressed = self.DoNothing()
 
     def WhenButtonPushed(self):
@@ -139,9 +133,11 @@ class Photobooth():
             logging.info("event ongoing, returning")
             return
         self.event_execution_ongoing = True
+        
         logging.info("Button pushed")
+        
         self.StopListeningButtonPush()
-        # self.ShowCountDown()
+
         self.TakePicture()
 
         self.StartListeningButtonPush()
@@ -163,19 +159,20 @@ class Photobooth():
                 self.pictures_directory_full_resolution, pictureName)
             path_thumb = os.path.join(
                 self.pictures_directory_thumbnail, pictureName)
-            # GPIO.output(self.pin_flash , GPIO.HIGH )
+
             self.flash.on()
             self.camera.capture(path_full)
             self.flash.off()
-            # GPIO.output(self.pin_flash , GPIO.LOW )
+
             logging.info("Image picture captured")
+            
             if self.pictures_save_overlayed:
                 self.SaveWithOverlay(path_full, pictureName)
+                
             self.GenerateThumbnail(path_full, path_thumb)
             if self.pictures_upload_pictures:
                 self.EnqueueFilesForUpload(path_full, path_thumb)
-            #    logging.info("Uploading picture")
-            #    self.FilesUploader.UploadFile(path_full,path_thumb,True)
+
         except:
             e = sys.exc_info()[0]
             logging.error(e)
