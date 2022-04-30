@@ -10,10 +10,12 @@ from threading import *
 from tkinter import Button
 
 from PIL import Image
+from grpclib import Status
 from gpiozero import Button, LED
 from picamera import PiCamera
 
 from Uploader import Uploader
+from StatusDisplay import StatusDisplay
 
 
 class Photobooth():
@@ -22,7 +24,7 @@ class Photobooth():
 
     run_event = threading.Event()
     run_event.set()
-    uploadsQueue = queue.Queue(maxsize=50)
+    uploadsQueue = queue.Queue(maxsize=0)
 
     logging.basicConfig(
         handlers=[
@@ -57,13 +59,16 @@ class Photobooth():
         self.resources_directory = None
         self.frame_picture = None
         self.countdown_pictures_array = None
+
         self.LoadConfiguration()
+        
         self.camera = PiCamera()
         self.camera.resolution = (self.camera_width, self.camera_height)
         self.camera.framerate = 15
         self.FilesUploader = Uploader(self.upload_pictures_endPoint_full_resolution,
                                       self.upload_pictures_endPoint_thumbnail, self.upload_JSON_endPoint,
                                       self.upload_JSON_apikey)
+        self.StatusDisplay = StatusDisplay(self.uploadsQueue,self.upload_interval_check_connection_seconds)
         
         os.putenv("DISPLAY", ":0.0")
 
@@ -82,9 +87,13 @@ class Photobooth():
             self.StartListeningButtonPush()
             logging.info("Start finished")
 
+            threadStatusDisplay = Thread(name="StatusDisplayThread", target=self.StartStatusDisplay, args=(
+                self.run_event,))
+            threadStatusDisplay.start()
+            
             threadUploader = Thread(name="UploaderThread", target=self.ProcessFilesToUploadQueue, args=(
                 self.uploadsQueue, self.run_event,))
-            threadUploader.start()
+            threadUploader.start()            
         except:
             e = sys.exc_info()[0]
             logging.error(e)
@@ -97,9 +106,7 @@ class Photobooth():
             self.camera_height = config["camera"]["camera_height"]
             self.camera_enable_frame_overlay = config["camera"]["camera_enable_frame_overlay"]
             self.pin_button = config["pins"]["pin_button"]
-            self.pin_button = 15
             self.pin_flash = config["pins"]["pin_flash"]
-            self.pin_flash = 18
             self.alpha_min = config["alpha_values"]["alpha_min"]
             self.alpha_max = config["alpha_values"]["alpha_max"]
             self.countdown_time_step = config["countdown"]["countdown_time_step"]
@@ -191,6 +198,13 @@ class Photobooth():
                     logging.info("Processing paths for " +
                                  filepaths[0] + " and " + filepaths[1])
                     self.FilesUploader.UploadFile(filepaths[0], filepaths[1], True)
+        except:
+            e = sys.exc_info()[0]
+            logging.error(e)
+    
+    def StartStatusDisplay(self, run_event):
+        try:
+            self.StatusDisplay.Start(run_event)
         except:
             e = sys.exc_info()[0]
             logging.error(e)
