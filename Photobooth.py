@@ -34,6 +34,7 @@ class Photobooth():
         level=logging.DEBUG, format='%(asctime)s - [%(levelname)s] (%(threadName)-9s) %(message)s', )
 
     def __init__(self):
+        self.rawConfig = None
         self.overlay = None
         self.camera_width = None
         self.camera_height = None
@@ -50,6 +51,7 @@ class Photobooth():
         self.upload_pictures_endPoint_thumbnail = None
         self.upload_JSON_endPoint = None
         self.upload_JSON_apikey = None
+        self.upload_type = None
         self.pictures_directory_full_resolution = None
         self.pictures_directory_thumbnail = None
         self.pictures_overlayed_directory = None
@@ -61,21 +63,17 @@ class Photobooth():
         self.countdown_pictures_array = None
 
         self.LoadConfiguration()
-        
+
         self.camera = PiCamera()
         self.camera.resolution = (self.camera_width, self.camera_height)
         self.camera.framerate = 15
-        self.FilesUploader = Uploader(self.upload_pictures_endPoint_full_resolution,
-                                      self.upload_pictures_endPoint_thumbnail, self.upload_JSON_endPoint,
-                                      self.upload_JSON_apikey)
-        self.StatusDisplay = StatusDisplay(self.uploadsQueue,self.upload_interval_check_connection_seconds)
-        
+        self.FilesUploader = Uploader(self.rawConfig["upload"])
+        self.StatusDisplay = StatusDisplay(self.uploadsQueue, self.upload_interval_check_connection_seconds)
+
         os.putenv("DISPLAY", ":0.0")
 
         self.button = Button(self.pin_button, pull_up=True)
         self.flash = LED(self.pin_flash)
-
-        self.FilesUploader.gDriveUploader.Authenticate()
 
     def Start(self):
         try:
@@ -90,10 +88,12 @@ class Photobooth():
             threadStatusDisplay = Thread(name="StatusDisplayThread", target=self.StartStatusDisplay, args=(
                 self.run_event,))
             threadStatusDisplay.start()
-            
+
             threadUploader = Thread(name="UploaderThread", target=self.ProcessFilesToUploadQueue, args=(
                 self.uploadsQueue, self.run_event,))
-            threadUploader.start()            
+            threadUploader.start()
+
+            self.WhenButtonPushed()
         except:
             e = sys.exc_info()[0]
             logging.error(e)
@@ -102,6 +102,7 @@ class Photobooth():
 
         with open('config.json', 'r') as configFile:
             config = json.load(configFile)
+            self.rawConfig = config
             self.camera_width = config["camera"]["camera_width"]
             self.camera_height = config["camera"]["camera_height"]
             self.camera_enable_frame_overlay = config["camera"]["camera_enable_frame_overlay"]
@@ -118,6 +119,7 @@ class Photobooth():
                 "upload"]["upload_pictures_endPoint_thumbnail"]
             self.upload_JSON_endPoint = config["upload"]["upload_JSON_endPoint"]
             self.upload_JSON_apikey = config["upload"]["upload_JSON_apikey"]
+            self.upload_type = config["upload"]["upload_mode"]
             self.pictures_directory_full_resolution = config[
                 "pictures"]["pictures_directory_full_resolution"]
             self.pictures_directory_thumbnail = config["pictures"]["pictures_directory_thumbnail"]
@@ -140,9 +142,9 @@ class Photobooth():
             logging.info("event ongoing, returning")
             return
         self.event_execution_ongoing = True
-        
+
         logging.info("Button pushed")
-        
+
         self.StopListeningButtonPush()
 
         self.TakePicture()
@@ -172,10 +174,10 @@ class Photobooth():
             self.flash.off()
 
             logging.info("Image picture captured")
-            
+
             if self.pictures_save_overlayed:
                 self.SaveWithOverlay(path_full, pictureName)
-                
+
             self.GenerateThumbnail(path_full, path_thumb)
             if self.pictures_upload_pictures:
                 self.EnqueueFilesForUpload(path_full, path_thumb)
@@ -193,15 +195,17 @@ class Photobooth():
         logging.info("Started upload processor")
         try:
             while run_event.is_set():
-                if not (self.uploadsQueue.empty()) :
+                if not self.StatusDisplay.isInternetOnline and not self.uploadsQueue.empty() and self.StatusDisplay.isInternetOnline:
+                    logging.info("No internet available. Will not upload.")
+                elif not self.uploadsQueue.empty() and self.StatusDisplay.isInternetOnline:
                     filepaths = self.uploadsQueue.get()
                     logging.info("Processing paths for " +
                                  filepaths[0] + " and " + filepaths[1])
-                    self.FilesUploader.UploadFile(filepaths[0], filepaths[1], True)
+                    self.FilesUploader.UploadFile(filepaths[0], filepaths[1])
         except:
             e = sys.exc_info()[0]
             logging.error(e)
-    
+
     def StartStatusDisplay(self, run_event):
         try:
             self.StatusDisplay.Start(run_event)

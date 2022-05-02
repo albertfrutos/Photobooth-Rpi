@@ -1,5 +1,6 @@
 import logging
 import os.path
+import sys
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -7,9 +8,11 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
+from JsonDBUpdater import JsonDBUpdater
+
 
 class GDriveUploader:
-    def __init__(self, parentFolderIDOriginal, parentFolderIDThumb):
+    def __init__(self, parentFolderIDOriginal, parentFolderIDThumb, jsonUpdateEndpoint, jsonUpdateApikey):
 
         # If modifying these scopes, delete the file token.json.
         
@@ -23,6 +26,8 @@ class GDriveUploader:
 
         self.parentFolderOriginal = parentFolderIDOriginal
         self.parentFolderThumb = parentFolderIDThumb
+
+        self.jsonDBUpdater = JsonDBUpdater(jsonUpdateEndpoint, jsonUpdateApikey)
 
     def Authenticate(self):
         creds = None
@@ -44,7 +49,7 @@ class GDriveUploader:
 
         self.service = build('drive', 'v3', credentials=creds)
 
-    def UploadFile(self, localPath, mimetype, parentFolder, filenameInDestination):
+    def UploadFileToGDrive(self, localPath, mimetype, parentFolder, filenameInDestination):
         self.Authenticate()
         file_metadata = {'name': filenameInDestination, 'parents': [parentFolder]}
         media = MediaFileUpload(localPath, mimetype=mimetype)
@@ -58,3 +63,21 @@ class GDriveUploader:
     def AssembleDownloadLink(self, fileId):
         downloadLink = "https://drive.google.com/uc?id=" + fileId + "&export=download"
         return downloadLink
+
+    def UploadFile(self,filePath, filePathThumb):
+        try:
+            filename = os.path.basename(filePath)
+
+            uploadedFileID = self.UploadFileToGDrive(filePath, 'image/jpeg', self.parentFolderOriginal, filename)
+            uploadedFileIDThumb = self.UploadFileToGDrive(filePathThumb, 'image/jpeg', self.parentFolderThumb, filename)
+
+            downloadLink = self.AssembleDownloadLink(uploadedFileID)
+            downloadLinkThumb = self.AssembleDownloadLink(uploadedFileIDThumb)
+
+
+            self.jsonDBUpdater.UpdateJSONDB(filename, downloadLink, downloadLinkThumb)
+
+        except:
+            e = sys.exc_info()[0]
+            logging.error(e)
+

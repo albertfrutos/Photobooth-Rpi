@@ -26,8 +26,6 @@ class StatusDisplay:
     
     def Start(self, run_event):
         try:
-            print("lalalalalalaOO")
-
             serial = i2c(port=1, address=0x3C)
             device = ssd1306(serial, width=128, height=64, rotate=0)
             device.clear()
@@ -51,10 +49,10 @@ class StatusDisplay:
         timeout = 5
         try:
             request = requests.get(url, timeout=timeout)
-            logging.info("Connected to the Internet")
+            logging.info("Connected to the Internet. Uploads unblocked.")
             return True
         except (requests.ConnectionError, requests.Timeout) as exception:
-            logging.info("No internet connection.")
+            logging.info("No internet connection. Uploads blocked")
             return False
             
     def getInterfaceIP(self):

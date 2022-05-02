@@ -5,8 +5,9 @@
         "camera_enable_frame_overlay": false
     },
     "pins": {
-        "pin_button": 10,
-        "pin_flash": 12
+        "pin_button": 14,
+        "pin_button_led": 20,
+        "pin_flash": 21
     },
     "alpha_values": {
         "alpha_min": 0,
@@ -16,7 +17,9 @@
         "countdown_time_step": 1
     },
     "upload": {
+        "upload_mode": "PHP/GDrive",
         "upload_interval_check_connection_seconds": 10,
+        "upload_PHP_endPoint": "http://MY_PHP_ENDPOINT/UPLOAD.PHP",
         "upload_pictures_endPoint_full_resolution": "FOLDER_ID_FULL",
         "upload_pictures_endPoint_thumbnail": "FOLDER_ID_THUMB",
         "upload_JSON_endPoint": "JSONBIN_IO_ENDPOINT",
