@@ -114,11 +114,11 @@ class Photobooth():
             self.upload_interval_check_connection_seconds = config[
                 "upload"]["upload_interval_check_connection_seconds"]
             self.upload_pictures_endPoint_full_resolution = config[
-                "upload"]["upload_pictures_endPoint_full_resolution"]
+                "upload"]["upload_GDrive"]["upload_pictures_endPoint_full_resolution"]
             self.upload_pictures_endPoint_thumbnail = config[
-                "upload"]["upload_pictures_endPoint_thumbnail"]
-            self.upload_JSON_endPoint = config["upload"]["upload_JSON_endPoint"]
-            self.upload_JSON_apikey = config["upload"]["upload_JSON_apikey"]
+                "upload"]["upload_GDrive"]["upload_pictures_endPoint_thumbnail"]
+            self.upload_JSON_endPoint = config["upload"]["upload_GDrive"]["upload_JSON_endPoint"]
+            self.upload_JSON_apikey = config["upload"]["upload_GDrive"]["upload_JSON_apikey"]
             self.upload_type = config["upload"]["upload_mode"]
             self.pictures_directory_full_resolution = config[
                 "pictures"]["pictures_directory_full_resolution"]

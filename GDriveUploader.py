@@ -15,7 +15,7 @@ class GDriveUploader:
     def __init__(self, parentFolderIDOriginal, parentFolderIDThumb, jsonUpdateEndpoint, jsonUpdateApikey):
 
         # If modifying these scopes, delete the file token.json.
-        
+
         self.scopes = ['https://www.googleapis.com/auth/drive.metadata',
                        'https://www.googleapis.com/auth/drive.file',
                        'https://www.googleapis.com/auth/drive',
@@ -30,6 +30,7 @@ class GDriveUploader:
         self.jsonDBUpdater = JsonDBUpdater(jsonUpdateEndpoint, jsonUpdateApikey)
 
     def Authenticate(self):
+        logging.info("Starting GDrive authentication process")
         creds = None
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
@@ -50,6 +51,7 @@ class GDriveUploader:
         self.service = build('drive', 'v3', credentials=creds)
 
     def UploadFileToGDrive(self, localPath, mimetype, parentFolder, filenameInDestination):
+        logging.info("Uploading file to GDrive: " + localPath)
         self.Authenticate()
         file_metadata = {'name': filenameInDestination, 'parents': [parentFolder]}
         media = MediaFileUpload(localPath, mimetype=mimetype)
@@ -64,7 +66,7 @@ class GDriveUploader:
         downloadLink = "https://drive.google.com/uc?id=" + fileId + "&export=download"
         return downloadLink
 
-    def UploadFile(self,filePath, filePathThumb):
+    def UploadFile(self, filePath, filePathThumb):
         try:
             filename = os.path.basename(filePath)
 
@@ -74,10 +76,8 @@ class GDriveUploader:
             downloadLink = self.AssembleDownloadLink(uploadedFileID)
             downloadLinkThumb = self.AssembleDownloadLink(uploadedFileIDThumb)
 
-
             self.jsonDBUpdater.UpdateJSONDB(filename, downloadLink, downloadLinkThumb)
 
         except:
             e = sys.exc_info()[0]
             logging.error(e)
-

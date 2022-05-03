@@ -11,6 +11,7 @@ class PHPUploader:
 
     def UploadFile(self, filePath, filePathThumb):
         try:
+            logging.info("Uploading file to PHP: " + filePath)
             url = self.endpoint
             filelist = dict()
             filelist['myfile[0]'] = open(filePath, 'rb')

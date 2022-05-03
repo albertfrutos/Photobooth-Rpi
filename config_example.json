@@ -19,11 +19,15 @@
     "upload": {
         "upload_mode": "PHP/GDrive",
         "upload_interval_check_connection_seconds": 10,
-        "upload_PHP_endPoint": "http://MY_PHP_ENDPOINT/UPLOAD.PHP",
-        "upload_pictures_endPoint_full_resolution": "FOLDER_ID_FULL",
-        "upload_pictures_endPoint_thumbnail": "FOLDER_ID_THUMB",
-        "upload_JSON_endPoint": "JSONBIN_IO_ENDPOINT",
-        "upload_JSON_apikey": "JSONBION_IO_APIKEY"
+        "upload_PHP": {
+            "upload_PHP_endPoint": "http://MY_PHP_ENDPOINT/UPLOAD.PHP"
+        },
+        "upload_GDrive": {
+            "upload_pictures_endPoint_full_resolution": "FOLDER_ID_FULL",
+            "upload_pictures_endPoint_thumbnail": "FOLDER_ID_THUMB",
+            "upload_JSON_endPoint": "JSONBIN_IO_ENDPOINT",
+            "upload_JSON_apikey": "JSONBION_IO_APIKEY"
+        }
     },
     "pictures": {
         "pictures_directory_full_resolution": "photos_full",

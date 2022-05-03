@@ -10,15 +10,17 @@ import logging
 class Uploader:
 
     def __init__(self, uploadConfig):
-        self.uploadAgent = None
+        self.UploadAgent = None
         if uploadConfig["upload_mode"] == "GDrive": #GDrive Upload
-            self.UploadAgent = GDriveUploader(uploadConfig["upload_pictures_endPoint_full_resolution"],
-                                              uploadConfig["upload_pictures_endPoint_thumbnail"],
-                                              uploadConfig["upload_JSON_endPoint"],
-                                              uploadConfig["upload_JSON_apikey"])
+            logging.info("Configuring Uploader class for GDrive uploadAgent")
+            self.UploadAgent = GDriveUploader(uploadConfig["upload_GDrive"]["upload_pictures_endPoint_full_resolution"],
+                                              uploadConfig["upload_GDrive"]["upload_pictures_endPoint_thumbnail"],
+                                              uploadConfig["upload_GDrive"]["upload_JSON_endPoint"],
+                                              uploadConfig["upload_GDrive"]["upload_JSON_apikey"])
             self.UploadAgent.Authenticate()
         else: #PHP endpoint upload
-            self.UploadAgent = PHPUploader(uploadConfig["upload_PHP_endPoint"])
+            logging.info("Configuring Uploader class for PHP uploadAgent")
+            self.UploadAgent = PHPUploader(uploadConfig["upload_PHP"]["upload_PHP_endPoint"])
 
     def UploadFile(self, filePath, filePathThumb):
         try:
