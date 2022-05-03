@@ -13,3 +13,5 @@ photos_thumb/*
 !photos_thumb/.gitkeep
 photos_overlayed/*
 !photos_overlayed/.gitkeep
+
+web_viewers/*/js/gallery-scripts.js

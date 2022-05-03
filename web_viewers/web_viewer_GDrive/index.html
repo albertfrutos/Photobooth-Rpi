@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polaroid Image Gallery</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="css/HoldOn.css" rel="stylesheet">
+    <script src="js/HoldOn.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"></script>
+    <script src="./js/gallery-scripts.js"></script>
+
+</head>
+
+<body>
+    <div id="mainDiv" hidden>
+        <header>
+
+        </header>
+
+        <div class="container">
+
+            <!-- Modal -->
+            <div class="modal fade" id="myModal" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <!--
+                    <div class="modal-header">
+                        <h4 class="modal-title">Modal Header</h4>
+                    </div>
+                    -->
+                        <div class="modal-body" width="100%">
+                            <!-- <p> </p> -->
+                            <img id="imgModal" src="" width="100%">
+                        </div>
+                        <!-- <div class="modal-footer">  </div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="app"></div>
+    </div>
+</body>
+
+</html>
