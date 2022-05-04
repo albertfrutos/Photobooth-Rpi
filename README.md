@@ -81,6 +81,8 @@ Both modes are webpages that once loaded in the web browser, make a query (each 
 }
 ```
 
+The viewers use this JSON's content to fetch the pictures from the client (your) side.
+
 * **PHP mode** allows a much faster upload speed (as just uploads the file and it's done) but requires a web server supporting PHP. This mode just has an endpoint returning a JSON file.
 
 * **GDrive mode** is a quite slower method, but allows hosting the viewer in a serverless system where the code must be static (such as GitHub pages). This mode has apikeys and unique endpoints in the javascript file, so the client side can get full (read and write) access to the jsonbin.io content.
