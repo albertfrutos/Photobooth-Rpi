@@ -7,6 +7,8 @@ config.json
 credentials.json
 token.json
 
+_pycache_/
+
 photos_full/*
 !photos_full/.gitkeep
 photos_thumb/*

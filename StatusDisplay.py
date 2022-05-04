@@ -34,7 +34,7 @@ class StatusDisplay:
                 with canvas(device) as draw:            
                     self.ipAddress = self.getInterfaceIP()
                     self.isInternetOnline = self.checkInternetConnection()
-                    internetStatus = "OK" if self.isInternetOnline else "Offline"
+                    internetStatus = "Online" if self.isInternetOnline else "Offline"
                     device.clear()
                     draw.text((10, 10), self.ipAddress, fill="white")
                     draw.text((10, 20), "UpQueue: " + str(self.getQueueSize(self.uploadQueue)), fill = "white")
