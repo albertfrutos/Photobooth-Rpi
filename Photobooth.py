@@ -74,6 +74,7 @@ class Photobooth():
 
         self.button = Button(self.pin_button, pull_up=True)
         self.flash = LED(self.pin_flash)
+        self.buttonLED = LED(self.pin_button_led)
 
     def Start(self):
         try:
@@ -92,8 +93,10 @@ class Photobooth():
             threadUploader = Thread(name="UploaderThread", target=self.ProcessFilesToUploadQueue, args=(
                 self.uploadsQueue, self.run_event,))
             threadUploader.start()
-
+            self.buttonLED.on()
+            
             self.WhenButtonPushed()
+            
         except:
             e = sys.exc_info()[0]
             logging.error(e)
@@ -107,6 +110,7 @@ class Photobooth():
             self.camera_height = config["camera"]["camera_height"]
             self.camera_enable_frame_overlay = config["camera"]["camera_enable_frame_overlay"]
             self.pin_button = config["pins"]["pin_button"]
+            self.pin_button_led = config["pins"]["pin_button_led"]
             self.pin_flash = config["pins"]["pin_flash"]
             self.alpha_min = config["alpha_values"]["alpha_min"]
             self.alpha_max = config["alpha_values"]["alpha_max"]
@@ -169,9 +173,12 @@ class Photobooth():
             path_thumb = os.path.join(
                 self.pictures_directory_thumbnail, pictureName)
 
+            self.ShowCountDown()
+            self.buttonLED.off()
             self.flash.on()
             self.camera.capture(path_full)
             self.flash.off()
+            self.buttonLED.on()
 
             logging.info("Image picture captured")
 
@@ -263,8 +270,11 @@ class Photobooth():
         countDownPictures = self.countdown_pictures_array
 
         for picture in countDownPictures:
+            self.buttonLED.off()
             overlay = self.GenerateOverlay(picture, 4, self.alpha_max)
-            time.sleep(self.countdown_time_step)
+            time.sleep(self.countdown_time_step/2)
+            self.buttonLED.on()
+            time.sleep(self.countdown_time_step/2)
             self.RemoveOverlay(overlay)
 
     def CameraFrameOverlay(self, filename):
