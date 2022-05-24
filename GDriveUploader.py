@@ -14,7 +14,7 @@ from JsonDBUpdater import JsonDBUpdater
 class GDriveUploader:
     def __init__(self, parentFolderIDOriginal, parentFolderIDThumb, jsonUpdateEndpoint, jsonUpdateApikey):
 
-        # If modifying these scopes, delete the file token.json.
+        # If modifying these scopes, delete the file gdrive_token.json.
 
         self.scopes = ['https://www.googleapis.com/auth/drive.metadata',
                        'https://www.googleapis.com/auth/drive.file',
@@ -32,20 +32,20 @@ class GDriveUploader:
     def Authenticate(self):
         logging.info("Starting GDrive authentication process")
         creds = None
-        # The file token.json stores the user's access and refresh tokens, and is
+        # The file gdrive_token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
-        if os.path.exists('token.json'):
-            creds = Credentials.from_authorized_user_file('token.json', self.scopes)
+        if os.path.exists('json/gdrive_token.json'):
+            creds = Credentials.from_authorized_user_file('json/gdrive_token.json', self.scopes)
         # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file('credentials.json', self.scopes)
+                flow = InstalledAppFlow.from_client_secrets_file('json/gdrive_credentials.json', self.scopes)
                 creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
-            with open('token.json', 'w') as token:
+            with open('json/gdrive_token.json', 'w') as token:
                 token.write(creds.to_json())
 
         self.service = build('drive', 'v3', credentials=creds)

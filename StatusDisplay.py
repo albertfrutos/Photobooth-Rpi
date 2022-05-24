@@ -17,13 +17,7 @@ class StatusDisplay:
         self.updateInterval = updateInterval
         self.isInternetOnline = self.checkInternetConnection()
         self.ipAddress = self.getInterfaceIP()
-        #serial = i2c(port=1, address=0x3C)
-        #self.device = ssd1306(serial, width=128, height=64, rotate=0)
-        
-        
 
-        
-    
     def Start(self, run_event):
         try:
             serial = i2c(port=1, address=0x3C)
@@ -66,9 +60,3 @@ class StatusDisplay:
         size = queue.qsize()
         logging.info("Upload Queue is: " + str(size))
         return size
-
-#_queue = queue.Queue(maxsize=0)
-#print("lalalalalala")
-#a = StatusDisplay(_queue, 5)
-#print("lalalalalala333")
-#a.Start()

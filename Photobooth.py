@@ -80,7 +80,6 @@ class Photobooth():
         try:
             logging.info("Starting...")
             self.camera.start_preview()
-            time.sleep(2)
             if self.camera_enable_frame_overlay:
                 self.CameraFrameOverlay("frame.png")
             self.StartListeningButtonPush()
@@ -103,7 +102,7 @@ class Photobooth():
 
     def LoadConfiguration(self):
 
-        with open('config.json', 'r') as configFile:
+        with open('json/config.json', 'r') as configFile:
             config = json.load(configFile)
             self.rawConfig = config
             self.camera_width = config["camera"]["camera_width"]
@@ -157,7 +156,9 @@ class Photobooth():
         self.event_execution_ongoing = False
 
     def ShowCountDown(self):
+        self.buttonLED.blink(0.3,0.3,None,True)
         self.CameraCountDownOverlay()
+        self.buttonLED.off()
 
     def GetFilename(self):
         filename = self.pictures_base_filename + "_" + \
@@ -202,7 +203,7 @@ class Photobooth():
         logging.info("Started upload processor")
         try:
             while run_event.is_set():
-                if not self.StatusDisplay.isInternetOnline and not self.uploadsQueue.empty() and self.StatusDisplay.isInternetOnline:
+                if not self.uploadsQueue.empty() and not self.StatusDisplay.isInternetOnline:
                     logging.info("No internet available. Will not upload.")
                 elif not self.uploadsQueue.empty() and self.StatusDisplay.isInternetOnline:
                     filepaths = self.uploadsQueue.get()
@@ -270,11 +271,8 @@ class Photobooth():
         countDownPictures = self.countdown_pictures_array
 
         for picture in countDownPictures:
-            self.buttonLED.off()
             overlay = self.GenerateOverlay(picture, 4, self.alpha_max)
-            time.sleep(self.countdown_time_step/2)
-            self.buttonLED.on()
-            time.sleep(self.countdown_time_step/2)
+            time.sleep(self.countdown_time_step)
             self.RemoveOverlay(overlay)
 
     def CameraFrameOverlay(self, filename):
