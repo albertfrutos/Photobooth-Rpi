@@ -19,13 +19,46 @@ from StatusDisplay import StatusDisplay
 
 
 class Photobooth():
+    
+    rawConfig = None
+    overlay = None
+    camera_width = None
+    camera_height = None
+    camera_enable_frame_overlay = None
+    pin_button = None
+    pin_button = None
+    pin_flash = None
+    pin_flash = None
+    alpha_min = None
+    alpha_max = None
+    countdown_time_step = None
+    upload_interval_check_connection_seconds = None
+    upload_pictures_endPoint_full_resolution = None
+    upload_pictures_endPoint_thumbnail = None
+    upload_JSON_endPoint = None
+    upload_JSON_apikey = None
+    upload_type = None
+    pictures_directory_full_resolution = None
+    pictures_directory_thumbnail = None
+    pictures_overlayed_directory = None
+    pictures_base_filename = None
+    pictures_save_overlayed = None
+    pictures_upload_pictures = None
+    resources_directory = None
+    frame_picture = None
+    countdown_pictures_array = None
+    
     frame_overlay = None
     event_execution_ongoing = False
 
     run_event = threading.Event()
     run_event.set()
+    
     uploadsQueue = queue.Queue(maxsize=0)
 
+    if not os.path.exists('debug.log'):
+        open('debug.log',"x").close();        
+    
     logging.basicConfig(
         handlers=[
             logging.FileHandler("debug.log"),
@@ -34,33 +67,6 @@ class Photobooth():
         level=logging.DEBUG, format='%(asctime)s - [%(levelname)s] (%(threadName)-9s) %(message)s', )
 
     def __init__(self):
-        self.rawConfig = None
-        self.overlay = None
-        self.camera_width = None
-        self.camera_height = None
-        self.camera_enable_frame_overlay = None
-        self.pin_button = None
-        self.pin_button = None
-        self.pin_flash = None
-        self.pin_flash = None
-        self.alpha_min = None
-        self.alpha_max = None
-        self.countdown_time_step = None
-        self.upload_interval_check_connection_seconds = None
-        self.upload_pictures_endPoint_full_resolution = None
-        self.upload_pictures_endPoint_thumbnail = None
-        self.upload_JSON_endPoint = None
-        self.upload_JSON_apikey = None
-        self.upload_type = None
-        self.pictures_directory_full_resolution = None
-        self.pictures_directory_thumbnail = None
-        self.pictures_overlayed_directory = None
-        self.pictures_base_filename = None
-        self.pictures_save_overlayed = None
-        self.pictures_upload_pictures = None
-        self.resources_directory = None
-        self.frame_picture = None
-        self.countdown_pictures_array = None
 
         self.LoadConfiguration()
 

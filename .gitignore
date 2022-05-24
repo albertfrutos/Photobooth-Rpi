@@ -2,17 +2,19 @@
 
 *.pyc
 *.log
-
-config.json
-gdrive_credentials.json
-gdrive_token.json
+*.json
 
 _pycache_/
 
+!json/*_example*
+json/.*
+
 photos_full/*
 !photos_full/.gitkeep
+
 photos_thumb/*
 !photos_thumb/.gitkeep
+
 photos_overlayed/*
 !photos_overlayed/.gitkeep
 
