@@ -1,46 +1,51 @@
 {
+    "fullScreen": false,
+    "uploadIntervalCheckConnection": 10,
     "camera": {
-        "camera_width": 2592,
-        "camera_height": 1944,
-        "camera_enable_frame_overlay": false
+        "cameraResolutionWidth": 2592,
+        "cameraResolutionHeight": 1944,
+        "cameraEnableFrameOverlayInPreview": false
     },
     "pins": {
-        "pin_button": 14,
-        "pin_button_led": 20,
-        "pin_flash": 21
+        "shutterButtonPin": 14,
+        "buttonLEDPin": 20,
+        "flashLightPin": 21
     },
     "alpha_values": {
-        "alpha_min": 0,
-        "alpha_max": 255
+        "minimumImageAlphaValue": 0,
+        "maximumImageAlphaValue": 255
     },
     "countdown": {
-        "countdown_time_step": 1
+        "countdownStepLength": 1
     },
     "upload": {
-        "upload_mode": "PHP/GDrive",
-        "upload_interval_check_connection_seconds": 10,
-        "upload_PHP": {
-            "upload_PHP_endPoint": "http://MY_PHP_ENDPOINT/UPLOAD.PHP"
+        "uploadMode": "GDrive,PHP",
+        "uploadPHP": {
+            "PHPEndPoint": "http://MY_PHP_ENDPOINT/UPLOAD.PHP"
         },
-        "upload_GDrive": {
-            "upload_pictures_endPoint_full_resolution": "FOLDER_ID_FULL",
-            "upload_pictures_endPoint_thumbnail": "FOLDER_ID_THUMB",
-            "upload_JSON_endPoint": "JSONBIN_IO_ENDPOINT",
-            "upload_JSON_apikey": "JSONBION_IO_APIKEY"
+        "uploadGDrive": {
+            "gDriveEndPointFullResolution": "FOLDER_ID_FULL",
+            "gDriveEndPointThumbnail": "FOLDER_ID_THUMB",
+            "uploadJSONEndPoint": "JSONBIN_IO_ENDPOINT",
+            "uploadJSONApikey": "JSONBION_IO_APIKEY"
         }
     },
     "pictures": {
-        "pictures_directory_full_resolution": "photos_full",
-        "pictures_directory_thumbnail": "photos_thumb",
-        "pictures_overlayed_directory": "photos_overlayed",
-        "pictures_base_filename": "picture",
-        "pictures_save_overlayed": false,
-        "pictures_upload_pictures": true
+        "picturesDirectoryFullResolution": "photos_full",
+        "picturesDirectoryThumbnail": "photos_thumb",
+        "picturesOverlayedDirectory": "photos_overlayed",
+        "picturesBaseFilename": "picture",
+        "picturesSaveOverlayed": false,
+        "picturesUploadEnabled": false
+    },
+    "funnyMode": {
+        "enabled": true,
+        "funnyPicturesArray": ["_PROVA.png"]
     },
     "resources": {
-        "resources_directory": "resources",
-        "frame_picture_overlay": "frame.png",
-        "countdown_pictures_array": ["number_1.png", "number_2.png", "number_3.png"]
+        "resourcesDirectory": "resources",
+        "framePictureOverlay": "frame.png",
+        "countDownPicturesArray": ["number_1.png", "number_2.png", "number_3.png"]
     }
 
 }

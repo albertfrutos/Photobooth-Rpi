@@ -11,24 +11,23 @@ class Uploader:
 
     def __init__(self, uploadConfig):
         self.UploadAgents = []
-        
-        uploadModes = uploadConfig["upload_mode"].split(",");
+
+        uploadModes = uploadConfig["uploadMode"].split(",");
         for mode in uploadModes:
-            if mode == "GDrive": #GDrive Upload
+            if mode == "GDrive":  # GDrive Upload
                 logging.info("Configuring Uploader class for GDrive UploadAgents")
-                agent = GDriveUploader(uploadConfig["upload_GDrive"]["upload_pictures_endPoint_full_resolution"],
-                                                uploadConfig["upload_GDrive"]["upload_pictures_endPoint_thumbnail"],
-                                                uploadConfig["upload_GDrive"]["upload_JSON_endPoint"],
-                                                uploadConfig["upload_GDrive"]["upload_JSON_apikey"])
+                agent = GDriveUploader(uploadConfig["uploadGDrive"]["gDriveEndPointFullResolution"],
+                                       uploadConfig["uploadGDrive"]["gDriveEndPointThumbnail"],
+                                       uploadConfig["uploadGDrive"]["uploadJSONEndPoint"],
+                                       uploadConfig["uploadGDrive"]["uploadJSONApikey"])
                 agent.Authenticate()
                 self.UploadAgents.append(agent);
-            elif mode == "PHP": #PHP endpoint upload
+            elif mode == "PHP":  # PHP endpoint upload
                 logging.info("Configuring Uploader class for PHP UploadAgents")
-                agent = PHPUploader(uploadConfig["upload_PHP"]["upload_PHP_endPoint"])
+                agent = PHPUploader(uploadConfig["uploadPHP"]["PHPEndPoint"])
                 self.UploadAgents.append(agent);
             else:
                 print("uploadMode" + mode + "unknown. Will not be initialized.")
-            
 
     def UploadFile(self, filePath, filePathThumb):
         try:
