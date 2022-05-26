@@ -24,41 +24,43 @@ from StatusDisplay import StatusDisplay
 class Photobooth():
     rawConfig = None
 
-    fullScreen = None
-    cameraResolutionWidth = None
-    cameraResolutionHeight = None
-    cameraEnableFrameOverlayInPreview = None
-    shutterButtonPin = None
-    flashLightPin = None
-    minimumImageAlphaValue = None
-    maximumImageAlphaValue = None
-    countdownStepLength = None
-    uploadIntervalCheckConnection = None
+    fullScreen = False
+    uploadIntervalCheckConnection = 10
+    cameraResolutionWidth = 2592
+    cameraResolutionHeight = 1944
+    cameraEnableFrameOverlayInPreview = False
+    shutterButtonPin = 14
+    buttonLEDPin = 20
+    flashLightPin = 21
+    minimumImageAlphaValue = 0
+    maximumImageAlphaValue = 255
+    countdownStepLength = 1
     gDriveEndPointFullResolution = None
     gDriveEndPointThumbnail = None
     uploadJSONEndPoint = None
     uploadJSONApikey = None
-    uploadMode = None
-    picturesDirectoryFullResolution = None
-    picturesDirectoryThumbnail = None
-    picturesOverlayedDirectory = None
-    picturesBaseFilename = None
-    picturesSaveOverlayed = None
-    picturesUploadEnabled = None
-    resourcesDirectory = None
-    framePictureOverlay = None
+    uploadMode = ""
+    picturesDirectoryFullResolution = "photos_full"
+    picturesDirectoryThumbnail = "photos_thumb"
+    picturesOverlayedDirectory = "photos_overlayed"
+    picturesBaseFilename = "picture"
+    picturesSaveOverlayed = False
+    picturesUploadEnabled = False
+    resourcesDirectory = "resources"
+    framePictureOverlay = "frame.jpg"
     countDownPicturesArray = []
+    isFunnyModeEnabled = False
+    funnyModeProbabilityPercent = 50
     funnyPicturesArray = []
 
     frame_overlay = None
     event_execution_ongoing = False
 
-    isFunnyModeEnabled = False
     funOverlay = None
 
     run_event = threading.Event()
     run_event.set()
-
+    
     uploadsQueue = queue.Queue(maxsize=0)
 
     if not os.path.exists('debug.log'):
@@ -176,9 +178,7 @@ class Photobooth():
         self.event_execution_ongoing = False
 
     def ShowCountDown(self):
-        self.buttonLED.blink(0.3, 0.3, None, True)
         self.CameraCountDownOverlay()
-        self.buttonLED.off()
 
     def GetFilename(self):
         filename = self.picturesBaseFilename + "_" + \
@@ -193,11 +193,13 @@ class Photobooth():
                 self.picturesDirectoryFullResolution, pictureName)
             path_thumb = os.path.join(
                 self.picturesDirectoryThumbnail, pictureName)
+            self.buttonLED.blink(0.3, 0.3, None, True)
             self.ShowCountDown()
             self.buttonLED.off()
             self.flash.on()
             self.camera.capture(path_full)
             self.flash.off()
+            logging.info("Image picture captured")
 
             self.GenerateThumbnail(path_full, path_thumb)
 
@@ -211,7 +213,6 @@ class Photobooth():
                 self.funOverlay = None
             self.buttonLED.on()
 
-            logging.info("Image picture captured")
 
             if self.picturesSaveOverlayed:
                 self.SaveWithOverlay(path_full, pictureName)
@@ -294,14 +295,10 @@ class Photobooth():
 
     def RemoveOverlay(self, overlay):
         self.camera.remove_overlay(overlay)
-
-    def getRandomFunnyPicture(self):
-        randomPicture = random.choice(self.funnyPicturesArray)
-        return randomPicture
-
+        
     def IsFunTime(self):
-        funNumber = randint(0, 5)
-        return funNumber == 5
+        funNumber = randint(0, 100)
+        return funNumber <= self.funnyModeProbabilityPercent
 
     def CameraCountDownOverlay(self):
         countDownPictures = self.countDownPicturesArray
@@ -311,7 +308,7 @@ class Photobooth():
             counter = counter + 1
             if self.isFunnyModeEnabled and isThisAFunnyRound and counter == 2:
                 logging.info("Is fun time!");
-                chosenFunnyPicture = self.getRandomFunnyPicture()
+                chosenFunnyPicture = random.choice(self.funnyPicturesArray)
                 logging.info("Adding funny overlay: " + chosenFunnyPicture)
                 self.funOverlay = self.GenerateOverlay(chosenFunnyPicture, 4, self.maximumImageAlphaValue)
             countDownOverlay = self.GenerateOverlay(picture, 4, self.maximumImageAlphaValue)
