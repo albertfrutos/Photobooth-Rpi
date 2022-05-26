@@ -40,7 +40,8 @@
     },
     "funnyMode": {
         "enabled": true,
-        "funnyPicturesArray": ["_PROVA.png"]
+        "funnyModeProbabilityPercent": 100,
+        "funnyPicturesArray": ["test.png"]
     },
     "resources": {
         "resourcesDirectory": "resources",

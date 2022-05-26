@@ -4,6 +4,8 @@ This project is a photobooth for Raspberry Pi, originally deeloped for RPi 4B, w
 
 The Photobooth is written in Python for the Photobooth itself, and HTML, Javascript and PHP for the uploaders and viewers.
 
+The application also includes a funny mode.
+
 ## Parts of the project
 
 The Photobooth is compound by the RPi+software themselves, but also by a small custom home-made electronic board.
@@ -41,11 +43,11 @@ The barrel connector is used to connect the 12V power source that powers the ULN
 
 There are several configuration files that you will need to adapt and modify in order to make the Photobooth work properly:
 
-* **config.json**: (rename the config_example.json file to config.json)this file configures the Photobooth itself. You can set up the pin numbers where you have connected each component, the directory names, enable frames in the picture, etc. An important part of this file to configure is the "upload", where the "upload_mode" (PHP and/or GDrive) can be selected and the application will directly handle the upload modes (one or both):
+* **config.json**: (rename the config_example.json file to config.json)this file configures the Photobooth itself. You can set up the pin numbers where you have connected each component, the directory names, enable frames in the picture, etc. An important part of this file to configure is the "upload", where the "uploadMode" (PHP and/or GDrive) can be selected and the application will directly handle the upload modes (one or both):
 
-  * **PHP**: when "upload_mode" is configured as "PHP", then the pictures are uploaded to a web server. You need to place the *web_viewer_PHP* folder in a PHP web server and enter the url to the *multiple-upload.php* endpoint in "upload_PHP_endPoint". To view the pictures uploaded in this mode, the viewer in *web_viewers/web_viewer_PHP/index.html* must be used. You will need to put the URL endpoint for the *getPictures.php* file in  *js/gallery-scripts.js*.
+  * **PHP**: when "uploadMode" is configured as "PHP", then the pictures are uploaded to a web server. You need to place the *web_viewer_PHP* folder in a PHP web server and enter the url to the *multiple-upload.php* endpoint in "upload_PHP_endPoint". To view the pictures uploaded in this mode, the viewer in *web_viewers/web_viewer_PHP/index.html* must be used. You will need to put the URL endpoint for the *getPictures.php* file in  *js/gallery-scripts.js*.
 
-  * **GDrive**: when "upload_mode" is configured as "GDrive", then the pictures are uploaded to a Google Drive Folder. In order to do this, you will need to get a token for Google Drive and complete the information in the *credentials_gdrive_example.json* with the credentials from Google and rename the file to *credentials.json*. You will also need to create Google Drive folders for the original and the thumbnail images and put their IDs in *upload_pictures_endPoint_full_resolution* and *upload_pictures_endPoint_thumbnail*. This mode takes a picture and uploads them to these folders and the connects to *jsonbin.io* to update a json file with the pictures' URLs. To view the pictures uploaded in this mode, the viewer in *web_viewers/web_viewer_GDrive/index.html* must be used but the BIN-ID and the APIKEY from jsonbin.io need to be obtained and introduced manually in *js/gallery-scripts.js*.
+  * **GDrive**: when "uploadMode" is configured as "GDrive", then the pictures are uploaded to a Google Drive Folder. In order to do this, you will need to get a token for Google Drive and complete the information in the *credentials_gdrive_example.json* with the credentials from Google and rename the file to *credentials.json*. You will also need to create Google Drive folders for the original and the thumbnail images and put their IDs in *gDriveEndPointFullResolution* and *gDriveEndPointThumbnail*. This mode takes a picture and uploads them to these folders and the connects to *jsonbin.io* to update a json file with the pictures' URLs. To view the pictures uploaded in this mode, the viewer in *web_viewers/web_viewer_GDrive/index.html* must be used but the BIN-ID and the APIKEY from jsonbin.io need to be obtained and introduced manually in *js/gallery-scripts.js*.
 
   * **GDrive/PHP or PHP/GDrive**: Pictures are uploaded to both places, in the order it has been configured.
   
@@ -53,8 +55,9 @@ There are several configuration files that you will need to adapt and modify in 
 
 ### Misc parameters in config.json
 
-* "upload_interval_check_connection_seconds" sets the number of seconds between internet connectivity checks. If there is no internet connection or it goes down, the Photobooth does not upload any pictures (as long as the check has been done between the connection being dropped and starting the upload). Once the connection is up again, then the upload is resumed.
-* "pictures_upload_pictures": sets whether if the pictures have to be uploaded or not.
+* "uploadIntervalCheckConnection" sets the number of seconds between internet connectivity checks. If there is no internet connection or it goes down, the Photobooth does not upload any pictures (as long as the check has been done between the connection being dropped and starting the upload). Once the connection is up again, then the upload is resumed.
+* "picturesUploadEnabled": sets whether if the pictures have to be uploaded or not.
+* "fullScreen" enables a mode intended for screens where the image does not fill the entire screen. It just generates a full screen with black background using tkinter, so the desktop is not seen.
 
 ### Photobooth status during run and threading
 
@@ -63,6 +66,8 @@ While you are using the Photobooth, the OLED screen shows the local RPi IP (usef
 ![Electornics circuitry image](/readme_assets/oled_screen_status.jpg)
 
 The filenames of the pictures to upload are queued and uploaded by an independent thread, as well as the internet status and screen updating, which also has its own and independent thread.
+
+
 
 ## Viewers
 
@@ -92,3 +97,11 @@ The viewers use this JSON's content to fetch the pictures from the client (your)
 ## Logging
 
 The code creates logs in the file *debug.log* and also shows them on the screen.
+
+## Funny mode
+
+Funny mode can be enabled through the configuration JSON file by setting the "enabled" attribute under "funnyMode" to true (if false, the funny mode is disabled).
+
+When enabled, once the countdown reaches 2 seconds, a random picture from the once specified in "funnyPicturesArray" (they must be stored under the "resources" directory) and shows it on a screen overlay until the picture has been taken. You can make your guests take a picture without a preview!
+
+The probability for this to happen in percentage can be configured in the "funnyModeProbabilityPercent".
