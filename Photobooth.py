@@ -84,8 +84,7 @@ class Photobooth():
         self.StatusDisplay = StatusDisplay(self.uploadsQueue, self.uploadIntervalCheckConnection)
 
         os.putenv("DISPLAY", ":0.0")
-
-        self.button = Button(self.shutterButtonPin, pull_up=True)
+        self.button = Button(self.shutterButtonPin, pull_up=False)
         self.flash = LED(self.flashLightPin)
         self.buttonLED = LED(self.buttonLEDPin)
 
@@ -112,8 +111,6 @@ class Photobooth():
                 self.uploadsQueue, self.run_event,))
             threadUploader.start()
             self.buttonLED.on()
-
-            self.WhenButtonPushed()
 
         except:
             e = sys.exc_info()[0]
@@ -151,6 +148,7 @@ class Photobooth():
             self.picturesSaveOverlayed = config["pictures"]["picturesSaveOverlayed"]
             self.picturesUploadEnabled = config["pictures"]["picturesUploadEnabled"]
             self.isFunnyModeEnabled = config["funnyMode"]["enabled"]
+            self.funnyModeProbabilityPercent = config["funnyMode"]["funnyModeProbabilityPercent"]
             self.funnyPicturesArray = config["funnyMode"]["funnyPicturesArray"]
             self.resourcesDirectory = config["resources"]["resourcesDirectory"]
             self.framePictureOverlay = config["resources"]["framePictureOverlay"]
@@ -298,6 +296,8 @@ class Photobooth():
         
     def IsFunTime(self):
         funNumber = randint(0, 100)
+        logging.info("Funny number is: " + str(funNumber))
+        logging.info("Probability is: " + str(self.funnyModeProbabilityPercent))
         return funNumber <= self.funnyModeProbabilityPercent
 
     def CameraCountDownOverlay(self):
@@ -310,7 +310,7 @@ class Photobooth():
                 logging.info("Is fun time!");
                 chosenFunnyPicture = random.choice(self.funnyPicturesArray)
                 logging.info("Adding funny overlay: " + chosenFunnyPicture)
-                self.funOverlay = self.GenerateOverlay(chosenFunnyPicture, 4, self.maximumImageAlphaValue)
+                self.funOverlay = self.GenerateOverlay(chosenFunnyPicture, 5, self.maximumImageAlphaValue)
             countDownOverlay = self.GenerateOverlay(picture, 4, self.maximumImageAlphaValue)
             time.sleep(self.countdownStepLength)
             self.RemoveOverlay(countDownOverlay)
