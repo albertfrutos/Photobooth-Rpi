@@ -197,13 +197,11 @@ class Photobooth():
             self.ShowCountDown()
             self.buttonLED.off()
             isThisAFunnyRound = self.IsFunTime()
-            
             if self.isFunnyModeEnabled and isThisAFunnyRound:
                 logging.info("Is fun time!");
                 chosenFunnyPicture = random.choice(self.funnyPicturesArray)
                 logging.info("Adding funny overlay: " + chosenFunnyPicture)
                 self.funOverlay = self.GenerateOverlay(chosenFunnyPicture, 5, self.maximumImageAlphaValue)
-            
             self.flash.on()
             self.camera.capture(path_full)
             self.flash.off()
