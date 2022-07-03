@@ -111,6 +111,8 @@ class Photobooth():
                 self.uploadsQueue, self.run_event,))
             threadUploader.start()
             self.buttonLED.on()
+            
+            self.TakePicture()
 
         except:
             e = sys.exc_info()[0]
@@ -194,16 +196,25 @@ class Photobooth():
             self.buttonLED.blink(0.3, 0.3, None, True)
             self.ShowCountDown()
             self.buttonLED.off()
+            isThisAFunnyRound = self.IsFunTime()
+            
+            if self.isFunnyModeEnabled and isThisAFunnyRound:
+                logging.info("Is fun time!");
+                chosenFunnyPicture = random.choice(self.funnyPicturesArray)
+                logging.info("Adding funny overlay: " + chosenFunnyPicture)
+                self.funOverlay = self.GenerateOverlay(chosenFunnyPicture, 5, self.maximumImageAlphaValue)
+            
             self.flash.on()
             self.camera.capture(path_full)
             self.flash.off()
+            
             logging.info("Image picture captured")
-
+#
             self.GenerateThumbnail(path_full, path_thumb)
-
+#
             if self.picturesUploadEnabled:
                 self.EnqueueFilesForUpload(path_full, path_thumb)
-
+#
             if self.funOverlay is not None:
                 time.sleep(1)
                 logging.info("Removing funny overlay")
@@ -303,14 +314,8 @@ class Photobooth():
     def CameraCountDownOverlay(self):
         countDownPictures = self.countDownPicturesArray
         counter = 0
-        isThisAFunnyRound = self.IsFunTime()
         for picture in countDownPictures:
-            counter = counter + 1
-            if self.isFunnyModeEnabled and isThisAFunnyRound and counter == 2:
-                logging.info("Is fun time!");
-                chosenFunnyPicture = random.choice(self.funnyPicturesArray)
-                logging.info("Adding funny overlay: " + chosenFunnyPicture)
-                self.funOverlay = self.GenerateOverlay(chosenFunnyPicture, 5, self.maximumImageAlphaValue)
+            counter = counter + 1            
             countDownOverlay = self.GenerateOverlay(picture, 4, self.maximumImageAlphaValue)
             time.sleep(self.countdownStepLength)
             self.RemoveOverlay(countDownOverlay)
