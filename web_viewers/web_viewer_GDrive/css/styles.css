@@ -1,4 +1,10 @@
-@import "https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap";
+@font-face {
+    font-family: 'childrenFont';
+    src: url('../rsc/font.ttf') format("truetype");
+    font-weight: normal;
+    font-style: normal;
+ }
+ @import "https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap";
 *,
 *:before,
 *:after {
@@ -18,7 +24,9 @@ body {
 header {
     margin-bottom: 40px;
     text-align: center;
-    font-size: 40pt;
+    line-height: 1;
+    font-family: 'childrenFont';
+    font-size: 45pt;
     color: #f7f7f7;
 }
 
@@ -64,8 +72,8 @@ header img {
 .gallery .polaroid img {
     width: 100%;
     height: auto;
-    max-width: 150px;
-    max-height: 150px;
+    max-width: 130px;
+    max-height: 130px;
     position: relative;
 }
 
