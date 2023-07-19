@@ -367,7 +367,7 @@ class Photobooth():
         return overlay
 
     def RemoveOverlay(self):
-        self.GenerateOverlay("no_overlay.png")
+        self.GenerateOverlay("noOverlay.png")
         
     def IsFunTime(self):
         funNumber = randint(0, 100)

@@ -19,6 +19,6 @@ photos_overlayed/*
 !photos_overlayed/.gitkeep
 
 resources/_*
-resources/*
+
 
 web_viewers/*/js/gallery-scripts.js
