@@ -11,11 +11,25 @@ from datetime import datetime
 from threading import *
 import tkinter as tk
 from random import randint
+import numpy as np
+
+import skimage.io
+from skimage.transform import rescale
+
+import libcamera
+
+from PyQt5 import QtGui
+from PyQt5.QtCore import Qt
+
+from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QLabel, QWidget, QStackedWidget)
+
+from picamera2 import Picamera2
+from picamera2.previews.qt import QGlPicamera2,QPicamera2
+
 
 from PIL import Image
-from grpclib import Status
+
 from gpiozero import Button, LED
-from picamera import PiCamera
 
 from Uploader import Uploader
 from StatusDisplay import StatusDisplay
@@ -32,8 +46,6 @@ class Photobooth():
     shutterButtonPin = 14
     buttonLEDPin = 20
     flashLightPin = 21
-    minimumImageAlphaValue = 0
-    maximumImageAlphaValue = 255
     countdownStepLength = 1
     gDriveEndPointFullResolution = None
     gDriveEndPointThumbnail = None
@@ -63,8 +75,9 @@ class Photobooth():
     
     uploadsQueue = queue.Queue(maxsize=0)
 
+
     if not os.path.exists('debug.log'):
-        open('debug.log', "x").close();
+        open('debug.log', "x").close()
 
     logging.basicConfig(
         handlers=[
@@ -77,12 +90,42 @@ class Photobooth():
 
         self.LoadConfiguration()
 
-        self.camera = PiCamera()
-        self.camera.resolution = (self.cameraResolutionWidth, self.cameraResolutionHeight)
-        self.camera.framerate = 15
+        self.camera = Picamera2()
+        self.app = QApplication([])
+
+        imgW = self.camera.sensor_resolution[0]
+        imgH = self.camera.sensor_resolution[1]
+
+        if self.rawConfig["camera"]["cameraResolutionWidth"] != "" and self.rawConfig["camera"]["cameraResolutionHeight"] != "":
+            imgH = self.rawConfig["camera"]["cameraResolutionHeight"]
+            imgW = self.rawConfig["camera"]["cameraResolutionWidth"]
+
+        pic_config = self.camera.create_still_configuration(main={"size": (imgW, imgH)}, lores={"size": (1280, 720)}, transform=libcamera.Transform(vflip=1), display="lores")
+        self.camera.configure(pic_config)
+
+        self.window = QWidget()
+        self.qpicamera2 = QPicamera2(self.camera, width=1280, height=720, keep_ar=True)
+
+        layout_h = QHBoxLayout()
+        self.layout_s = QStackedWidget()
+
+        self.layout_s.addWidget(self.qpicamera2)
+
+        self.pic = QLabel()
+        self.pic.setAlignment(Qt.AlignCenter)
+
+        self.pic.show()
+
+        self.layout_s.addWidget(self.pic)
+
+        layout_h.addWidget(self.layout_s)
+        self.window.setLayout(layout_h)
+        self.window.setStyleSheet("background-color: black;")
+        
+
         self.FilesUploader = Uploader(self.rawConfig["upload"])
         self.StatusDisplay = StatusDisplay(self.uploadsQueue, self.uploadIntervalCheckConnection)
-
+        
         os.putenv("DISPLAY", ":0.0")
         self.button = Button(self.shutterButtonPin, pull_up=False)
         self.flash = LED(self.flashLightPin)
@@ -90,33 +133,34 @@ class Photobooth():
 
     def Start(self):
         try:
-            if (self.fullScreen):
-                root = tk.Tk()
-                root.attributes('-fullscreen', True)
-                root.configure(bg='black')
-                root.update()
-
             logging.info("Starting...")
-            self.camera.start_preview()
-            if self.cameraEnableFrameOverlayInPreview:
-                self.CameraFrameOverlay("frame.png")
+            self.camera.start()
+            self.camera.set_controls({"AfMode": libcamera.controls.AfModeEnum.Auto})
+            self.camera.set_controls({"FrameRate": 10})
+
             self.StartListeningButtonPush()
             logging.info("Start finished")
 
-            threadStatusDisplay = Thread(name="StatusDisplayThread", target=self.StartStatusDisplay, args=(
-                self.run_event,))
-            threadStatusDisplay.start()
+            #threadStatusDisplay = Thread(name="StatusDisplayThread", target=self.StartStatusDisplay, args=(
+            #    self.run_event,))
+            #threadStatusDisplay.start()
 
             threadUploader = Thread(name="UploaderThread", target=self.ProcessFilesToUploadQueue, args=(
                 self.uploadsQueue, self.run_event,))
             threadUploader.start()
             self.buttonLED.on()
-            
-            self.TakePicture()
+
+            if (self.fullScreen):
+                self.window.showFullScreen()
+            self.window.show()
+
+            self.app.exec()
 
         except:
             e = sys.exc_info()[0]
             logging.error(e)
+
+    
 
     def LoadConfiguration(self):
 
@@ -127,12 +171,9 @@ class Photobooth():
             self.fullScreen = config["fullScreen"]
             self.cameraResolutionWidth = config["camera"]["cameraResolutionWidth"]
             self.cameraResolutionHeight = config["camera"]["cameraResolutionHeight"]
-            self.cameraEnableFrameOverlayInPreview = config["camera"]["cameraEnableFrameOverlayInPreview"]
             self.shutterButtonPin = config["pins"]["shutterButtonPin"]
             self.buttonLEDPin = config["pins"]["buttonLEDPin"]
             self.flashLightPin = config["pins"]["flashLightPin"]
-            self.minimumImageAlphaValue = config["alpha_values"]["minimumImageAlphaValue"]
-            self.maximumImageAlphaValue = config["alpha_values"]["maximumImageAlphaValue"]
             self.countdownStepLength = config["countdown"]["countdownStepLength"]
             self.uploadIntervalCheckConnection = config["uploadIntervalCheckConnection"]
             self.gDriveEndPointFullResolution = config[
@@ -167,11 +208,18 @@ class Photobooth():
             logging.info("event ongoing, returning")
             return
         self.event_execution_ongoing = True
+        
+        self.camera.set_controls({"AfMode": libcamera.controls.AfModeEnum.Continuous})
 
         logging.info("Button pushed")
 
         self.StopListeningButtonPush()
 
+        logging.info("loading")
+        #overlay = cv2.imread("resources/number_1.png", cv2.IMREAD_UNCHANGED)
+        logging.info("loaded")
+        #self.qpicamera2.set_overlay(overlay)
+        logging.info("loading")
         self.TakePicture()
 
         self.StartListeningButtonPush()
@@ -195,16 +243,38 @@ class Photobooth():
                 self.picturesDirectoryThumbnail, pictureName)
             self.buttonLED.blink(0.3, 0.3, None, True)
             self.ShowCountDown()
+            self.camera.set_controls({"AfMode": libcamera.controls.AfModeEnum.Auto, "AfSpeed": libcamera.controls.AfSpeedEnum.Fast})
+            job = self.camera.autofocus_cycle(wait=False)
+            self.GenerateOverlay("camera.png")
+            time.sleep(0.1)
+            self.GenerateOverlay("camera_flash.png")
+
+            
             self.buttonLED.off()
+            self.flash.on()
+            
+            self.camera.wait(job)
+            self.camera.capture_file(path_full)
+            self.flash.off()
+            self.RemoveOverlay()
+
+            self.pic.setPixmap(QtGui.QPixmap(path_full).scaled(1216,684))  #*0.9
+
+            self.layout_s.setCurrentIndex(1)
+
+            time.sleep(5)
+
+            self.layout_s.setCurrentIndex(0)
+
+            
+
             isThisAFunnyRound = self.IsFunTime()
             if self.isFunnyModeEnabled and isThisAFunnyRound:
                 logging.info("Is fun time!");
                 chosenFunnyPicture = random.choice(self.funnyPicturesArray)
                 logging.info("Adding funny overlay: " + chosenFunnyPicture)
-                self.funOverlay = self.GenerateOverlay(chosenFunnyPicture, 5, self.maximumImageAlphaValue)
-            self.flash.on()
-            self.camera.capture(path_full)
-            self.flash.off()
+                self.funOverlay = self.GenerateOverlay(chosenFunnyPicture)
+
             
             logging.info("Image picture captured")
 #
@@ -216,7 +286,7 @@ class Photobooth():
             if self.funOverlay is not None:
                 time.sleep(1)
                 logging.info("Removing funny overlay")
-                self.RemoveOverlay(self.funOverlay)
+                self.RemoveOverlay()
                 self.funOverlay = None
             self.buttonLED.on()
 
@@ -281,27 +351,23 @@ class Photobooth():
             e = sys.exc_info()[0]
             logging.error(e)
 
-    def GenerateOverlay(self, filename, overlay_layer, alphaValue):
+    def GenerateOverlay(self, filename, scale = 1):
         try:
+            logging.info("generating overlay")
             overlayFile = os.path.join(self.resourcesDirectory, filename)
-            img = Image.open(overlayFile)
-            pad = Image.new('RGBA', (
-                ((img.size[0] + 31) // 32) * 32,
-                ((img.size[1] + 15) // 16) * 16,
-            ))
-            pad.paste(img, (0, 0), img)
-            overlay = self.camera.add_overlay(pad.tobytes(), size=img.size)
-            overlay.layer = overlay_layer
-            overlay.alpha = 0
-            overlay.alpha = alphaValue
+            logging.info(overlayFile)
+            overlay = skimage.io.imread(overlayFile)
+            logging.info("read")
+            self.qpicamera2.set_overlay(overlay)
+
         except:
             e = sys.exc_info()[0]
             logging.error(e)
 
         return overlay
 
-    def RemoveOverlay(self, overlay):
-        self.camera.remove_overlay(overlay)
+    def RemoveOverlay(self):
+        self.GenerateOverlay("no_overlay.png")
         
     def IsFunTime(self):
         funNumber = randint(0, 100)
@@ -312,14 +378,17 @@ class Photobooth():
     def CameraCountDownOverlay(self):
         countDownPictures = self.countDownPicturesArray
         counter = 0
+
+        logging.info(countDownPictures)
+        
         for picture in countDownPictures:
             counter = counter + 1            
-            countDownOverlay = self.GenerateOverlay(picture, 4, self.maximumImageAlphaValue)
+            countDownOverlay = self.GenerateOverlay(picture, 0.9)
             time.sleep(self.countdownStepLength)
-            self.RemoveOverlay(countDownOverlay)
+            self.RemoveOverlay()
 
     def CameraFrameOverlay(self, filename):
-        self.frame_overlay = self.GenerateOverlay(filename, 3, self.maximumImageAlphaValue)
+        self.frame_overlay = self.GenerateOverlay(filename)
 
     def DoNothing(self):
         return

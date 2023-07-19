@@ -20,6 +20,7 @@ class PHPUploader:
             if r.status_code != 200:
                 print('sendErr: ' + r.url)
             else:
+                print("Upload to PHP finished")
                 print(r.text)
         except:
             e = sys.exc_info()[0]

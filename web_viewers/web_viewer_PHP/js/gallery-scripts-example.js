@@ -72,7 +72,7 @@ req.onreadystatechange = () => {
             HoldOn.close()
             $("#mainDiv").removeAttr("hidden").fadeIn(2000);
             $(event.currentTarget).parent().parent().removeAttr("hidden");
-            $("header").html("<b>Els Mombitos... fem un any!</b><img src='img/party_flags.png' width='100%' height='auto' />");
+            $("header").html("<b>Faig un any!</b>");
         });
     }
 };

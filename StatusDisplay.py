@@ -17,6 +17,7 @@ class StatusDisplay:
         self.updateInterval = updateInterval
         self.isInternetOnline = self.checkInternetConnection()
         self.ipAddress = self.getInterfaceIP()
+        logging.info("got ip address")
 
     def Start(self, run_event):
         try:
