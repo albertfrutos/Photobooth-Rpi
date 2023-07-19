@@ -247,7 +247,7 @@ class Photobooth():
             job = self.camera.autofocus_cycle(wait=False)
             self.GenerateOverlay("camera.png")
             time.sleep(0.1)
-            self.GenerateOverlay("camera_flash.png")
+            self.GenerateOverlay("cameraFlash.png")
 
             
             self.buttonLED.off()
