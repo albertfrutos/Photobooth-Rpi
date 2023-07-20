@@ -36,7 +36,8 @@
         "picturesOverlayedDirectory": "photos_overlayed",
         "picturesBaseFilename": "picture",
         "picturesSaveOverlayed": false,
-        "picturesUploadEnabled": false
+        "picturesUploadEnabled": false,
+        "usbPictureCopyPath": "/media/pi/drive"
     },
     "funnyMode": {
         "enabled": true,

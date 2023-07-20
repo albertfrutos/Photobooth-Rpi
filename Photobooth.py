@@ -12,6 +12,7 @@ from threading import *
 import tkinter as tk
 from random import randint
 import numpy as np
+import shutil
 
 import skimage.io
 from skimage.transform import rescale
@@ -190,6 +191,7 @@ class Photobooth():
             self.picturesBaseFilename = config["pictures"]["picturesBaseFilename"]
             self.picturesSaveOverlayed = config["pictures"]["picturesSaveOverlayed"]
             self.picturesUploadEnabled = config["pictures"]["picturesUploadEnabled"]
+            self.usbPictureCopyPath = config["pictures"]["usbPictureCopyPath"]
             self.isFunnyModeEnabled = config["funnyMode"]["enabled"]
             self.funnyModeProbabilityPercent = config["funnyMode"]["funnyModeProbabilityPercent"]
             self.funnyPicturesArray = config["funnyMode"]["funnyPicturesArray"]
@@ -204,6 +206,7 @@ class Photobooth():
         self.button.when_pressed = self.DoNothing()
 
     def WhenButtonPushed(self):
+    
         if self.event_execution_ongoing:
             logging.info("event ongoing, returning")
             return
@@ -221,6 +224,12 @@ class Photobooth():
         #self.qpicamera2.set_overlay(overlay)
         logging.info("loading")
         self.TakePicture()
+
+        if(os.path.exists(self.usbPictureCopyPath)):
+            logging.info("copy pictures")
+            self.CopyFilesToUSB()
+        else:
+            logging.info("no copy")
 
         self.StartListeningButtonPush()
         self.event_execution_ongoing = False
@@ -242,27 +251,40 @@ class Photobooth():
             path_thumb = os.path.join(
                 self.picturesDirectoryThumbnail, pictureName)
             self.buttonLED.blink(0.3, 0.3, None, True)
-            self.ShowCountDown()
+            self.camera.set_controls({"AfMode": libcamera.controls.AfModeEnum.Continuous})
             self.camera.set_controls({"AfMode": libcamera.controls.AfModeEnum.Auto, "AfSpeed": libcamera.controls.AfSpeedEnum.Fast})
+            #job = self.camera.autofocus_cycle(wait=False)
+            self.ShowCountDown()
             job = self.camera.autofocus_cycle(wait=False)
             self.GenerateOverlay("camera.png")
-            time.sleep(0.1)
+            self.camera.wait(job)
+            #time.sleep(0.1)
             self.GenerateOverlay("cameraFlash.png")
 
             
             self.buttonLED.off()
             self.flash.on()
             
-            self.camera.wait(job)
             self.camera.capture_file(path_full)
             self.flash.off()
             self.RemoveOverlay()
 
-            self.pic.setPixmap(QtGui.QPixmap(path_full).scaled(1216,684))  #*0.9
 
+            image = QtGui.QImage(path_full)
+            overlay = QtGui.QImage("resources/roll.png")
+            painter = QtGui.QPainter()
+            painter.begin(image)
+            painter.drawImage(0, 0, overlay)
+            painter.end()
+
+            #self.GenerateOverlay("roll.png")
+            #self.pic.setPixmap(QtGui.QPixmap(path_full).scaled(1216,684))  #*0.9
+            self.pic.setPixmap(QtGui.QPixmap.fromImage(image).scaled(1216,684))  #*0.9  original is 1280,720
             self.layout_s.setCurrentIndex(1)
 
-            time.sleep(5)
+            time.sleep(6)
+            
+            self.RemoveOverlay()
 
             self.layout_s.setCurrentIndex(0)
 
@@ -270,7 +292,7 @@ class Photobooth():
 
             isThisAFunnyRound = self.IsFunTime()
             if self.isFunnyModeEnabled and isThisAFunnyRound:
-                logging.info("Is fun time!");
+                logging.info("Is fun time!")
                 chosenFunnyPicture = random.choice(self.funnyPicturesArray)
                 logging.info("Adding funny overlay: " + chosenFunnyPicture)
                 self.funOverlay = self.GenerateOverlay(chosenFunnyPicture)
@@ -392,3 +414,15 @@ class Photobooth():
 
     def DoNothing(self):
         return
+    
+    def CopyFilesToUSB(self):
+         for file in os.listdir(self.picturesDirectoryFullResolution):
+            # check if current path is a file
+            sourceFilePath = os.path.join(self.picturesDirectoryFullResolution, file)
+            targetFilePath = os.path.join(self.usbPictureCopyPath,file)
+            if os.path.isfile(sourceFilePath) and not os.path.exists(targetFilePath):
+                logging.info("Copying " + sourceFilePath + " to " + targetFilePath)
+                shutil.copyfile(sourceFilePath, targetFilePath)
+            else:
+                logging.info("Skipping " + sourceFilePath)
+
